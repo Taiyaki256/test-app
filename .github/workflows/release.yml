@@ -59,7 +59,7 @@ jobs:
           releaseBody: "See the assets to download this version and install."
           releaseDraft: true
           prerelease: false
-          releaseCommitish: "release"
+          releaseCommitish: "main"
           tauriScript: "pnpm tauri"
           repo: "test-release"
           args: ${{ matrix.args }}
