@@ -59,8 +59,6 @@ jobs:
           releaseBody: "See the assets to download this version and install."
           releaseDraft: true
           prerelease: false
-          releaseId: "v__VERSION__"
-          tagName: "v__VERSION__"
           releaseCommitish: "release"
           tauriScript: "pnpm tauri"
           repo: "test-release"
