@@ -1,15 +1,110 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/tauri";
-
+  import { appWindow } from "@tauri-apps/api/window";
+  import { AppBar } from "@skeletonlabs/skeleton";
+  import { onMount } from "svelte";
   let name = "";
   let greetMsg = "";
+  let isFullscreen = false;
+
+  async function fullscreen() {
+    isFullscreen = await appWindow.isFullscreen();
+    if (!isFullscreen) {
+      appWindow.setFullscreen(true);
+    } else {
+      appWindow.setFullscreen(false);
+    }
+    isFullscreen = !isFullscreen;
+  }
+  function minimize() {
+    appWindow.minimize();
+  }
+
+  async function maximize() {
+    let maximizeState = await appWindow.isMaximized();
+
+    if (!maximizeState) {
+      appWindow.maximize();
+    } else {
+      appWindow.unmaximize();
+    }
+  }
+
+  function hide() {
+    appWindow.hide();
+  }
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
     greetMsg = await invoke("greet", { name });
   }
+
+  onMount(() => {
+    const appBar = document.querySelectorAll(
+      ".app-bar-row-main, .app-bar-slot-lead, .app-bar-slot-trail, .app-bar-slot-default"
+    );
+    for (let i = 0; i < appBar.length; i++) {
+      appBar[i].setAttribute("data-tauri-drag-region", "");
+    }
+  });
 </script>
 
+<AppBar class="pt-1 pl-1 pr-1 pb-0 select-none {isFullscreen ? 'hidden' : ''}">
+  <!-- <div data-tauri-drag-region class="select-none"> -->
+  <svelte:fragment slot="lead">(icon)</svelte:fragment>
+  Test-App
+  <svelte:fragment slot="trail">
+    <button
+      class="h-8 pt-1 pb-1"
+      id="titlebar-fullscreen"
+      on:click={fullscreen}
+    >
+      <img
+        src="https://api.iconify.design/mdi:window-minimize.svg"
+        alt="fullscreen"
+        class="h-full"
+      />
+    </button>
+    <button class="h-8 pt-1 pb-1" id="titlebar-minimize" on:click={minimize}>
+      <img
+        src="https://api.iconify.design/mdi:window-minimize.svg"
+        alt="minimize"
+        class="h-full"
+      />
+    </button>
+    <button class="h-8 pt-1 pb-1" id="titlebar-maximize" on:click={maximize}>
+      <img
+        src="https://api.iconify.design/mdi:window-maximize.svg"
+        alt="maximize"
+        class="h-full"
+      />
+    </button>
+    <button class="h-8 pt-1 pb-1" id="titlebar-close" on:click={hide}>
+      <img
+        src="https://api.iconify.design/mdi:close.svg"
+        alt="close"
+        class="h-full"
+      />
+    </button>
+  </svelte:fragment>
+</AppBar>
+<!-- <div data-tauri-drag-region class="titlebar">
+  <button class="titlebar-button" id="titlebar-minimize" on:click={minimize}>
+    <img
+      src="https://api.iconify.design/mdi:window-minimize.svg"
+      alt="minimize"
+    />
+  </button>
+  <div class="titlebar-button" id="titlebar-maximize">
+    <img
+      src="https://api.iconify.design/mdi:window-maximize.svg"
+      alt="maximize"
+    />
+  </div>
+  <div class="titlebar-button" id="titlebar-close">
+    <img src="https://api.iconify.design/mdi:close.svg" alt="close" />
+  </div>
+</div> -->
 <div class="container">
   <h1>Welcome to Tauri!</h1>
 
@@ -44,6 +139,30 @@
     filter: drop-shadow(0 0 2em #ff3e00);
   }
 
+  .titlebar {
+    height: 30px;
+    background: #329ea3;
+    user-select: none;
+    display: flex;
+    justify-content: flex-end;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+  .titlebar-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+    background: #329ea3;
+    border: none;
+  }
+  .titlebar-button:hover {
+    background: #5bbec3;
+  }
+
   :root {
     font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
     font-size: 16px;
@@ -51,13 +170,17 @@
     font-weight: 400;
 
     color: #0f0f0f;
-    background-color: #f6f6f6;
+    background-color: transparent;
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
+    height: 100%;
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
   }
 
   .container {
@@ -99,8 +222,8 @@
     text-align: center;
   }
 
-  input,
-  button {
+  form input,
+  form button {
     border-radius: 8px;
     border: 1px solid transparent;
     padding: 0.6em 1.2em;
@@ -113,20 +236,20 @@
     box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
   }
 
-  button {
+  form button {
     cursor: pointer;
   }
 
-  button:hover {
+  form button:hover {
     border-color: #396cd8;
   }
-  button:active {
+  form button:active {
     border-color: #396cd8;
     background-color: #e8e8e8;
   }
 
-  input,
-  button {
+  form input,
+  form button {
     outline: none;
   }
 
@@ -144,12 +267,12 @@
       color: #24c8db;
     }
 
-    input,
-    button {
+    form input,
+    form button {
       color: #ffffff;
       background-color: #0f0f0f98;
     }
-    button:active {
+    form button:active {
       background-color: #0f0f0f69;
     }
   }
